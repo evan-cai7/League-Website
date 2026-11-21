@@ -17,3 +17,10 @@ def get_items(version: str) -> dict:
         for item_id, item in raw.items()
         if item["gold"]["purchasable"] and item["maps"].get("11")
     }
+
+def get_champions(version: str) -> dict:
+    url = f"https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json"
+    response = httpx.get(url)
+    response.raise_for_status()
+    return response.json()["data"]
+
