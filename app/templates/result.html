@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Result</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
+    .enemy { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Your champion: {{ my_champ }}</h1>
+
+  <h2>Enemies</h2>
+  {% for enemy in enemies %}
+    <div class="enemy">
+      <strong>{{ enemy.champion }}</strong>
+      - {{ enemy.kills }} / {{ enemy.deaths }} / {{ enemy.assists }}
+    </div>
+  {% endfor %}
+
+  <h2>Threat profile</h2>
+  <ul>
+    <li>Physical damage: {{ (profile.ad_share * 100) | round(0) | int }}%</li>
+    <li>Magic damage: {{ (profile.ap_share * 100) | round(0) | int }}%</li>
+    <li>Tanks: {{ profile.tank_count }}</li>
+    <li>Burst threats: {{ profile.burst_count }}</li>
+  </ul>
+
+  <p><a href="/build">Back to the form</a></p>
+</body>
+</html>
+
