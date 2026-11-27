@@ -1,0 +1,20 @@
+BURST_MAGES = {
+    "Ahri",
+    "Annie",
+    "Aurora",
+    "Brand",
+    "Karma",
+    "Leblanc",
+    "Lissandra",
+    "Lux",
+    "Neeko",
+    "Orianna",
+    "Seraphine",
+    "Sylas",
+    "Syndra",
+    "TwistedFate",
+    "Veigar",
+    "Vex",
+    "Zoe",
+}
+
