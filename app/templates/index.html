@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><title>League Builder</title></head>
+<body>
+  <h1>Items (patch {{ version }})</h1>
+  {% for item in items %}
+    <div>
+      <img src="https://ddragon.leagueoflegends.com/cdn/{{ version }}/img/item/{{ item.id }}.png" width="32">
+      {{ item.name }} - {{ item.gold.total }}g
+    </div>
+  {% endfor %}
+</body>
+</html>
+
