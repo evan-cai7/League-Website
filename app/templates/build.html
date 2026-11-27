@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Build</title>
+  <style>
+    button { display: block; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <form method="post" action="/recommend">
+    <h1>Your champion</h1>
+    <select name="my_champ">
+      {% for champ in champs %}
+        <option value="{{ champ.id }}">{{ champ.name }}</option>
+      {% endfor %}
+    </select>
+
+    {% for i in range(1, 6) %}
+      <div>
+        <h3>Enemy {{ i }}</h3>
+        <select name="enemy{{ i }}">
+          {% for champ in champs %}
+            <option value="{{ champ.id }}">{{ champ.name }}</option>
+          {% endfor %}
+        </select>
+        <input type="number" name="enemy{{ i }}_kills" min="0" value="0">
+        <input type="number" name="enemy{{ i }}_deaths" min="0" value="0">
+        <input type="number" name="enemy{{ i }}_assists" min="0" value="0">
+      </div>
+    {% endfor %}
+
+    <button type="submit">Get build</button>
+  </form>
+</body>
+</html>
