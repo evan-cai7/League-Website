@@ -16,13 +16,19 @@ STAT_VALUE = {
 # Multipliers per champion class. Tune these with your game knowledge.
 ROLE_WEIGHTS = {
     "Marksman": {"damage": 1.0, "attack_speed": 1.2, "crit": 1.2, "health": 0.4, "resist": 0.6, "move": 0.5, "haste": 0.3},
-    "Fighter":  {"damage": 1.0, "attack_speed": 0.5, "crit": 0.3, "health": 1.0, "resist": 1.0, "move": 0.7, "haste": 1.2},
+    "Fighter":  {"damage": 1.0, "attack_speed": 0.7, "crit": 0.3, "health": 1.0, "resist": 1.0, "move": 0.8, "haste": 1.2},
     "Tank":     {"damage": 0.4, "attack_speed": 0.1, "crit": 0.0, "health": 1.4, "resist": 1.3, "move": 0.5, "haste": 1.0},
     "Mage":     {"damage": 1.0, "attack_speed": 0.0, "crit": 0.0, "health": 0.6, "resist": 0.7, "move": 0.5, "haste": 1.2},
     "Assassin": {"damage": 1.2, "attack_speed": 0.3, "crit": 0.3, "health": 0.6, "resist": 0.6, "move": 0.8, "haste": 1.0},
     "Support":  {"damage": 0.5, "attack_speed": 0.0, "crit": 0.0, "health": 1.0, "resist": 1.0, "move": 0.5, "haste": 1.0},
 }
-NEUTRAL = {key: 1.0 for key in ROLE_WEIGHTS["Fighter"]}
+
+CLASS_STRENGTH = 0.7
+STAT_GROUPS = ("damage", "attack_speed", "crit", "health", "resist", "move", "haste")
+NEUTRAL = {key: 1.0 for key in STAT_GROUPS}
+
+# How much the primary class counts vs the secondary (1.0 = primary only, 0.5 = equal)
+PRIMARY_SHARE = 0.9
 
 # Flat gold-equivalent bonus for items tagged AbilityHaste (rough stand-in)
 HASTE_BONUS = 400
@@ -30,16 +36,33 @@ HASTE_BONUS = 400
 # HP above this on a single item counts at half value (diminishing returns)
 HP_SOFT_CAP = 500
 
+# Crit chance caps at 100%, so more crit items than this are wasted
+MAX_CRIT_ITEMS = 4
+
+BURST_BASE = 0.2         # weight with zero burst threats
+BURST_PER_THREAT = 0.1   # added per burst threat
+BURST_MAX = 0.8          # ceiling
+
 def get_role_weights(tags: list) -> dict:
-    # Data Dragon lists the primary class first: weight it 70/30 over the second
     known = [ROLE_WEIGHTS[t] for t in tags if t in ROLE_WEIGHTS]
     if not known:
         return NEUTRAL
-    if len(known) == 1:
-        return known[0]
-    primary, secondary = known[0], known[1]
-    return {key: 0.5 * primary[key] + 0.5 * secondary[key] for key in NEUTRAL}
 
+    if len(known) == 1:
+        blended = known[0]
+    else:
+        primary, secondary = known[0], known[1]
+        blended = {
+            key: PRIMARY_SHARE * primary[key] + (1 - PRIMARY_SHARE) * secondary[key]
+            for key in STAT_GROUPS
+        }
+
+    # Pull every weight toward 1.0 (neutral)
+    return {key: 1.0 + CLASS_STRENGTH * (blended[key] - 1.0) for key in STAT_GROUPS}
+
+def burst_factor(profile) -> float:
+    threats = getattr(profile, "burst_count", 0)
+    return min(BURST_MAX, BURST_BASE + BURST_PER_THREAT * threats)
 
 def score_item(
     item: dict,
@@ -57,7 +80,7 @@ def score_item(
     my_ap_share = max(0.0, 1.0 - my_ad_share)
 
     # 1. Survivability scaling
-    burst_weight = min(1.2, 0.3 + 0.25 * getattr(profile, "burst_count", 0))
+    burst_weight = burst_factor(profile)
     hp_synergy = 1.0 + min(0.5, current_bonus_hp / 2000.0)
 
     # 2. Offensive scaling (off-type damage is heavily penalized)
@@ -178,15 +201,28 @@ def recommend_build(
 
     scored.sort(key=lambda s: s["score"], reverse=True)
 
-    # At most one pair of boots in the final build
+        # At most one pair of boots and at most MAX_CRIT_ITEMS crit items
     has_boots = False
+    crit_count = 0
     final_build = []
     for entry in scored:
-        is_boots = "Boots" in entry["item"].get("tags", [])
+        item = entry["item"]
+        is_boots = "Boots" in item.get("tags", [])
+        is_crit = (
+            item.get("stats", {}).get("FlatCritChanceMod", 0) > 0
+            or "CriticalStrike" in item.get("tags", [])
+        )
+
         if is_boots and has_boots:
             continue
+        if is_crit and crit_count >= MAX_CRIT_ITEMS:
+            continue
+
         if is_boots:
             has_boots = True
+        if is_crit:
+            crit_count += 1
+
         final_build.append(entry)
         if len(final_build) == n:
             break

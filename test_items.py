@@ -1,8 +1,5 @@
-from app.ddragon import get_latest_version, get_completed_items
+from app.ddragon import get_latest_version, get_items
+from app.tags import EXCLUDED_ITEMS
 
-version = get_latest_version()
-items = get_completed_items(version)
-
-print(len(items))
-for item in list(items.values())[:8]:
-    print(item["name"], item["gold"]["total"], item["tags"], item["stats"])
+all_names = {i["name"] for i in get_items(get_latest_version()).values()}
+print("Not found:", [n for n in EXCLUDED_ITEMS if n not in all_names])

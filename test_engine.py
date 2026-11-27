@@ -16,7 +16,7 @@ enemies = [
 
 profile = build_threat_profile(enemies, champs)
 
-champ_id = "Jinx"
+champ_id = "Sett"
 
 info = champs[champ_id]["info"]
 my_ad_share = info["attack"] / (info["attack"] + info["magic"])
