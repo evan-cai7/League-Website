@@ -23,12 +23,13 @@ ROLE_WEIGHTS = {
     "Support":  {"damage": 0.5, "attack_speed": 0.0, "crit": 0.0, "health": 1.0, "resist": 1.0, "move": 0.5, "haste": 1.0},
 }
 
-CLASS_STRENGTH = 0.7
+CLASS_STRENGTH = 1.0   # 1.0 = full class weights, lower = pulled toward neutral
 STAT_GROUPS = ("damage", "attack_speed", "crit", "health", "resist", "move", "haste")
+SOFTEN_GROUPS = ("damage", "health", "resist")
 NEUTRAL = {key: 1.0 for key in STAT_GROUPS}
 
 # How much the primary class counts vs the secondary (1.0 = primary only, 0.5 = equal)
-PRIMARY_SHARE = 0.9
+PRIMARY_SHARE = 0.7
 
 # Flat gold-equivalent bonus for items tagged AbilityHaste (rough stand-in)
 HASTE_BONUS = 400
@@ -39,9 +40,9 @@ HP_SOFT_CAP = 500
 # Crit chance caps at 100%, so more crit items than this are wasted
 MAX_CRIT_ITEMS = 4
 
-BURST_BASE = 0.2         # weight with zero burst threats
-BURST_PER_THREAT = 0.1   # added per burst threat
-BURST_MAX = 0.8          # ceiling
+BURST_BASE = 0.6         # weight with zero burst threats
+BURST_PER_THREAT = 0.05  # added per burst threat
+BURST_MAX = 0.9          # ceiling
 
 def get_role_weights(tags: list) -> dict:
     known = [ROLE_WEIGHTS[t] for t in tags if t in ROLE_WEIGHTS]
@@ -58,7 +59,10 @@ def get_role_weights(tags: list) -> dict:
         }
 
     # Pull every weight toward 1.0 (neutral)
-    return {key: 1.0 + CLASS_STRENGTH * (blended[key] - 1.0) for key in STAT_GROUPS}
+    return {
+        key: (1.0 + CLASS_STRENGTH * (blended[key] - 1.0)) if key in SOFTEN_GROUPS else blended[key]
+        for key in STAT_GROUPS
+    }
 
 def burst_factor(profile) -> float:
     threats = getattr(profile, "burst_count", 0)
