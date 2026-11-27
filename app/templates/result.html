@@ -3,14 +3,28 @@
 <head>
   <title>Result</title>
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
+    body { font-family: sans-serif; max-width: 640px; margin: 40px auto; }
     .enemy { margin-bottom: 8px; }
+    .item { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .item img { width: 48px; height: 48px; }
+    .reason { color: #555; font-size: 14px; }
   </style>
 </head>
 <body>
   <h1>Your champion: {{ my_champ }}</h1>
 
-  <h2>Enemies</h2>
+  <h2>Recommended build</h2>
+  {% for r in recommended %}
+    <div class="item">
+      <img src="https://ddragon.leagueoflegends.com/cdn/{{ version }}/img/item/{{ r.id }}.png" alt="{{ r.item.name }}">
+      <div>
+        <strong>{{ loop.index }}. {{ r.item.name }}</strong> - {{ r.item.gold.total }}g
+        <div class="reason">{{ r.reason }}</div>
+      </div>
+    </div>
+  {% endfor %}
+
+  <h2>Enemy team</h2>
   {% for enemy in enemies %}
     <div class="enemy">
       <strong>{{ enemy.champion }}</strong>
@@ -29,4 +43,3 @@
   <p><a href="/build">Back to the form</a></p>
 </body>
 </html>
-

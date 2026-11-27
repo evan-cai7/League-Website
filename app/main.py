@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 
-from app.ddragon import get_latest_version, get_items, get_champions
+from app.ddragon import get_latest_version, get_items, get_champions, get_completed_items
 from app.threat import build_threat_profile
+from app.engine import recommend_build
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
@@ -16,6 +17,7 @@ def home(request: Request):
         request, "index.html", {"version": version, "items": items.values()}
     )
 
+
 @app.get("/build")
 def build(request: Request):
     version = get_latest_version()
@@ -24,6 +26,7 @@ def build(request: Request):
     return templates.TemplateResponse(
         request, "build.html", {"version": version, "champs": champ_list}
     )
+
 
 @app.post("/recommend")
 async def recommend(request: Request):
@@ -38,11 +41,29 @@ async def recommend(request: Request):
             "deaths": int(form[f"enemy{i}_deaths"]),
             "assists": int(form[f"enemy{i}_assists"]),
         })
-    champs = get_champions(get_latest_version())
+
+    version = get_latest_version()
+    champs = get_champions(version)
     profile = build_threat_profile(enemies, champs)
+
+    info = champs[my_champ]["info"]
+    my_ad_share = info["attack"] / max(1, info["attack"] + info["magic"])
+
+    recommended = recommend_build(
+        get_completed_items(version),
+        profile,
+        my_ad_share,
+        my_tags=champs[my_champ]["tags"],
+    )
 
     return templates.TemplateResponse(
         request,
         "result.html",
-        {"my_champ": my_champ, "enemies": enemies, "profile": profile},
+        {
+            "version": version,
+            "my_champ": my_champ,
+            "enemies": enemies,
+            "profile": profile,
+            "recommended": recommended,
+        },
     )
