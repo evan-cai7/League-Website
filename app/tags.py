@@ -18,3 +18,25 @@ BURST_MAGES = {
     "Zoe",
 }
 
+EXCLUDED_ITEMS = {
+    "Ardent Censer",
+    "Bloodsong",
+    "Celestial Opposition",
+    "Dawncore",
+    "Dream Maker",
+    "Echoes of Helia",
+    "Guardian's Horn",
+    "Imperial Mandate",
+    "Knight's Vow",
+    "Locket of the Iron Solari",
+    "Mikael's Blessing",
+    "Moonstone Renewer",
+    "Redemption",
+    "Solstice Sleigh",
+    "Staff of Flowing Water",
+    "Sword of Blossoming Dawn",
+    "Whispering Circlet",
+    "World Atlas",
+    "Zaz'Zak's Realmspike",
+    "Zeke's Convergence",
+}

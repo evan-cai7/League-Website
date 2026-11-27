@@ -1,4 +1,5 @@
 from functools import lru_cache
+from app.tags import EXCLUDED_ITEMS
 import httpx
 
 @lru_cache(maxsize=1)
@@ -36,4 +37,5 @@ def get_completed_items(version: str) -> dict:
         and item["gold"]["total"] >= 1600
         and "Consumable" not in item.get("tags", [])
         and "Trinket" not in item.get("tags", [])
+        and item["name"] not in EXCLUDED_ITEMS
     }
