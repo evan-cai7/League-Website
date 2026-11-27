@@ -1,12 +1,14 @@
+from functools import lru_cache
 import httpx
 
-
+@lru_cache(maxsize=1)
 def get_latest_version() -> str:
     response = httpx.get("https://ddragon.leagueoflegends.com/api/versions.json")
     response.raise_for_status()
     versions = response.json()
     return versions[0]
 
+@lru_cache(maxsize=2)
 def get_items(version: str) -> dict:
     url = f"https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/item.json"
     response = httpx.get(url)
@@ -18,6 +20,7 @@ def get_items(version: str) -> dict:
         if item["gold"]["purchasable"] and item["maps"].get("11")
     }
 
+@lru_cache(maxsize=2)
 def get_champions(version: str) -> dict:
     url = f"https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json"
     response = httpx.get(url)
